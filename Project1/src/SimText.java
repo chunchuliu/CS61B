@@ -48,7 +48,7 @@ public class SimText {
 
             /* Draw the ocean. */
             for (int x = 0; x < width + 2; x++) {
-                System.out.print("-");
+                System.out.print("#");
             }
             System.out.println();
             for (int y = 0; y < height; y++) {
@@ -66,7 +66,7 @@ public class SimText {
                 System.out.println("|");
             }
             for (int x = 0; x < width + 2; x++) {
-                System.out.print("-");
+                System.out.print("#");
             }
             System.out.println();
         }

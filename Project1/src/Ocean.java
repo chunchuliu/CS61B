@@ -1,5 +1,7 @@
 /* Ocean.java */
 
+import sun.security.provider.SHA;
+
 /**
  *  The Ocean class defines an object that models an ocean full of sharks and
  *  fish.  Descriptions of the methods you must implement appear below.  They
@@ -29,7 +31,11 @@ public class Ocean {
      *  Define any variables associated with an Ocean object here.  These
      *  variables MUST be private.
      */
+    private int width;
+    private int height;
+    private int starveTime;
 
+    private Animal[][] ocean;
 
 
     /**
@@ -46,6 +52,16 @@ public class Ocean {
 
     public Ocean(int i, int j, int starveTime) {
         // Your solution here.
+        this.width = i;
+        this.height = j;
+        this.starveTime = starveTime;
+
+        this.ocean = new Animal[this.height][this.width];
+        for(int p = 0; p < this.height; p++) {
+            for(int q = 0; q < this.width; q++) {
+                this.ocean[p][q] = new Animal(EMPTY, 0);
+            }
+        }
     }
 
     /**
@@ -55,7 +71,7 @@ public class Ocean {
 
     public int width() {
         // Replace the following line with your solution.
-        return 1;
+        return this.width;
     }
 
     /**
@@ -65,7 +81,7 @@ public class Ocean {
 
     public int height() {
         // Replace the following line with your solution.
-        return 1;
+        return this.height;
     }
 
     /**
@@ -75,7 +91,7 @@ public class Ocean {
 
     public int starveTime() {
         // Replace the following line with your solution.
-        return 1;
+        return this.starveTime;
     }
 
     /**
@@ -87,6 +103,8 @@ public class Ocean {
 
     public void addFish(int x, int y) {
         // Your solution here.
+        ocean[y][x].setKind(FISH);
+        ocean[y][x].setLifeTime(this.starveTime());
     }
 
     /**
@@ -99,6 +117,8 @@ public class Ocean {
 
     public void addShark(int x, int y) {
         // Your solution here.
+        ocean[y][x].setKind(SHARK);
+        ocean[y][x].setLifeTime(this.starveTime());
     }
 
     /**
@@ -110,7 +130,7 @@ public class Ocean {
 
     public int cellContents(int x, int y) {
         // Replace the following line with your solution.
-        return EMPTY;
+        return ocean[y][x].getKind();
     }
 
     /**
@@ -118,9 +138,203 @@ public class Ocean {
      *  @return an ocean representing the elapse of one timestep.
      */
 
+    public int aroundFish(int x, int y, Animal[][] transferedOcean) { // x is width; y is height
+        x++;
+        y++;
+        int up = y - 1;
+        int bottom = y + 1;
+        int left = x - 1;
+        int right = x + 1;
+        int numOfFish = 0;
+//        System.out.println(up + " "+ bottom + ' ' + left + " " + right);
+        for(int i = left; i <= right; i++) {
+            for(int j = up; j <= bottom; j++) {
+
+//                System.out.print(transferedOcean[i][j].getKind() + " ");
+                if(transferedOcean[i][j].getKind() == FISH) {
+                    numOfFish++;
+                }
+            }
+//            System.out.println();
+        }
+
+        return numOfFish;
+    }
+
+    public int aroundShark(int x, int y, Animal[][] transferedOcean) { // x is width; y is height
+        x++;
+        y++;
+        int up = y - 1;
+        int bottom = y + 1;
+        int left = x - 1;
+        int right = x + 1;
+        int numOfShark = 0;
+        for(int p = left; p <= right; p++) {
+            for(int q = up; q <= bottom; q++) {
+                if(transferedOcean[p][q].getKind() == SHARK) {
+                    numOfShark++;
+                }
+            }
+        }
+
+        return numOfShark;
+    }
+
     public Ocean timeStep() {
         // Replace the following line with your solution.
-        return new Ocean(1, 1, 1);
+        Ocean newOcean = new Ocean(this.width(), this.height(), starveTime);
+        Animal[][] tmp = new Animal[height()+2][width()+2];
+        System.out.println(width() + " " + height());
+        for(int i = 1; i <= height(); i++) {
+            for (int j = 1; j <= width(); j++) {
+                //System.out.println((i-1) + " " + (j-1));
+                tmp[i][j] = this.ocean[i - 1][j - 1];
+            }
+        }
+        for(int i = 1; i <= width(); i++) {
+            tmp[0][i] = this.ocean[height()-1][i-1];
+            tmp[height()+1][i] = this.ocean[0][i-1];
+        }
+        for(int i = 1; i <= height(); i++) {
+            tmp[i][0] = this.ocean[i-1][width()-1];
+            tmp[i][width()+1] = this.ocean[i-1][0];
+        }
+        tmp[0][0] = this.ocean[height()-1][width()-1];
+        tmp[0][width()+1] = this.ocean[height()-1][0];
+        tmp[height()+1][0] = this.ocean[0][width()-1];
+        tmp[height()+1][width()+1] = this.ocean[0][0];
+
+//        tmp[0][0] = new Animal();
+//        tmp[0][width()+1] = new Animal();
+//        tmp[height()+1][0] = new Animal();
+//        tmp[height()+1][width()+1] = new Animal();
+
+//        for(int i = 1; i <= width(); i++){
+//
+//            this.ocean[0][i].setKind(this.ocean[height][i].getKind());
+//        }
+//        for(int i = 1; i <= height(); i++) {
+//            this.ocean[i][0] = this.ocean[i][width()];
+//        }
+//        this.ocean[0][0] = this.ocean[width()][height()];
+//        this.ocean[0][width()+1] = this.ocean[height()][1];
+//
+//        this.ocean[height()+1][0] = this.ocean[1][width()];
+//        this.ocean[height()+1][width()+1] = this.ocean[1][1];
+
+
+
+
+
+        for(int p = 0; p < height(); p++) {
+            for(int q = 0; q < width(); q++) {
+                int numOfFish = aroundFish(p, q, tmp);
+                int numOfShark = aroundShark(p, q, tmp);
+                //System.out.println(numOfFish + ' ' + numOfShark);
+
+                if(this.ocean[p][q].getKind() == FISH) {
+                    numOfFish--;
+                    if(numOfFish >= 0 && numOfShark == 0) {
+                        if(this.ocean[p][q].getLifeTime() == 0){
+                            newOcean.ocean[p][q].setKind(EMPTY);
+                            newOcean.ocean[p][q].setLifeTime(0);
+                        } else {
+                            System.out.println("Reserve this one!!!!! " + p + " " + q + tmp[p+1][q+1].getKind() + " " +tmp[p+1][q+1].getLifeTime());
+
+                            newOcean.ocean[p][q].setKind(tmp[p+1][q+1].getKind());
+                            newOcean.ocean[p][q].setLifeTime(tmp[p+1][q+1].getLifeTime()-1);
+                        }
+                    }
+                    if(numOfShark == 1) {
+                        newOcean.ocean[p][q].setKind(EMPTY);
+                        newOcean.ocean[p][q].setLifeTime(0);
+                    }
+                    if(numOfShark > 1) {
+                        newOcean.ocean[p][q].setKind(SHARK);
+                        newOcean.ocean[p][q].setLifeTime(starveTime());
+                    }
+                    System.out.print(newOcean.ocean[p][q].getLifeTime());
+                }
+                if(this.ocean[p][q].getKind() == EMPTY) {
+                    if(numOfFish >= 2 && numOfShark <= 1) {
+                        newOcean.ocean[p][q].setKind(FISH);
+                        newOcean.ocean[p][q].setLifeTime(starveTime());
+                    }
+                    if(numOfFish >= 2 && numOfShark >= 2) {
+                        newOcean.ocean[p][q].setKind(SHARK);
+                        newOcean.ocean[p][q].setLifeTime(starveTime());
+                    }
+                    if(numOfFish < 2) {
+                        newOcean.ocean[p][q].setKind(EMPTY);
+                        newOcean.ocean[p][q].setLifeTime(0);
+                    }
+                    System.out.print(newOcean.ocean[p][q].getLifeTime());
+                }
+                if(this.cellContents(q, p) == SHARK) {
+                    numOfShark--;
+                    if(numOfShark == 0 && numOfFish == 0){
+                        if(this.ocean[p][q].getLifeTime() == 0) {
+                            newOcean.ocean[p][q].setKind(EMPTY);
+                            newOcean.ocean[p][q].setLifeTime(0);
+                        } else {
+                            System.out.println("Reserve this one!!!!! " + p + " " + q);
+                            newOcean.ocean[p][q].setKind(this.ocean[p][q].getKind());
+                            newOcean.ocean[p][q].setLifeTime(this.ocean[p][q].getLifeTime()-1);
+                        }
+                    }
+                    for (int i = p+1-1; i <= p+1+1; i++) {
+                        for(int j = q+1-1; j <= q+ 1+1; j++) {
+                            if(tmp[i][j].getKind() == FISH) {
+                                if(i == 0 && j != 0 && j != (width()+1)) {
+                                    System.out.println("It is eaten" + (height()-1) + " " + (j-1));
+                                    newOcean.ocean[height()-1][j-1].setKind(EMPTY);
+                                    newOcean.ocean[height()-1][j-1].setLifeTime(0);
+                                }
+                                if(i == (height()+1) && j != 0 && j != (width()+1)) {
+                                    System.out.println("It is eaten" + 0 + " " + (j-1));
+                                    newOcean.ocean[0][j-1].setKind(EMPTY);
+                                    newOcean.ocean[0][j-1].setLifeTime(0);
+                                }
+                                if(j == 0 && i != 0 && i != (height()+1)) {
+                                    System.out.println("It is eaten" + (i-1) + " " + (width()-1));
+                                    newOcean.ocean[i-1][width()-1].setKind(EMPTY);
+                                    newOcean.ocean[i-1][width()-1].setLifeTime(0);
+                                }
+                                if(j == (width()+1) && i != 0 && i != (height()+1)) {
+                                    System.out.println("It is eaten" + (i-1) + " " + 0);
+                                    newOcean.ocean[i-1][0].setKind(EMPTY);
+                                    newOcean.ocean[i-1][0].setLifeTime(0);
+                                }
+                                if(i == 0 && j == 0) {
+                                    System.out.println("It is eaten" + (width()-1) + " " + (height()-1));
+                                    newOcean.ocean[width()-1][height()-1].setKind(EMPTY);
+                                    newOcean.ocean[width()-1][height()-1].setLifeTime(0);
+                                }
+                                if(i == 0 && j == width()+1) {
+                                    System.out.println("It is eaten" + (height()-1) + " " + 0);
+                                    newOcean.ocean[height()-1][0].setKind(EMPTY);
+                                    newOcean.ocean[height()-1][0].setLifeTime(0);
+                                }
+                                if(i == height()+1 && j == 0) {
+                                    System.out.println("It is eaten" + 0 + " " + (width()-1));
+                                    newOcean.ocean[0][width()-1].setKind(EMPTY);
+                                    newOcean.ocean[0][width()-1].setLifeTime(0);
+                                }
+                                if(i == height()+1 && j == width()+1) {
+                                    System.out.println("It is eaten" + 0 + " " + 0);
+                                    newOcean.ocean[0][0].setKind(EMPTY);
+                                    newOcean.ocean[0][0].setLifeTime(0);
+                                }
+                                newOcean.ocean[p][q].setKind(SHARK);
+                                newOcean.ocean[p][q].setLifeTime(starveTime());
+                            }
+                        }
+                    }
+                    System.out.print(newOcean.ocean[p][q].getLifeTime() );
+                }
+            }
+        }
+        return newOcean;
     }
 
     /**
